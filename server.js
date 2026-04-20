@@ -6,6 +6,9 @@ const Datastore = require('nedb-promises');
 
 const app = express();
 app.use(express.static('public'));
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
 if (!fs.existsSync('./db')) fs.mkdirSync('./db');
 
 const db = {
