@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FightPool 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#08080a;--bg2:#101013;--bg3:#17171b;--bg4:#1e1e23;--bg5:#26262c;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#eeeef0;--muted:#7a7a84;--dim:#45454c;
+  --red:#d93228;--gold:#f0c040;--silver:#b0b8c0;--bronze:#cd7f42;
+  --green:#2ec76e;--orange:#f97316;
+  --fd:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);font-size:14px;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}
+
+/* AUTH */
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 70% 40% at 65% 0%,rgba(217,50,40,.08) 0%,transparent 60%),var(--bg);}
+.abox{width:100%;max-width:360px;padding:1rem;}
+.alogo{font-family:var(--fd);font-size:34px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;
+  display:flex;align-items:center;gap:10px;margin-bottom:2rem;}
+.abar{width:5px;height:34px;background:var(--red);border-radius:2px;}
+.alogo span{color:var(--red);}
+.atabs{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.5rem;}
+.atab{flex:1;padding:9px;background:none;border:none;color:var(--muted);font-family:var(--fd);
+  font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.atab.on{background:var(--bg4);color:var(--text);}
+.fg{margin-bottom:12px;}
+.fg label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.fi{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;
+  padding:9px 12px;color:var(--text);font-family:var(--fb);font-size:14px;outline:none;transition:border-color .15s;}
+.fi:focus{border-color:var(--border2);}
+.fi option{background:var(--bg3);}
+.bred{width:100%;background:var(--red);border:none;border-radius:6px;padding:11px;color:#fff;
+  font-family:var(--fd);font-size:15px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .15s;}
+.bred:hover{opacity:.88;}
+.aerr{color:#f87171;font-size:12px;margin-top:8px;min-height:16px;}
+
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh;}
+#app.on{display:flex;}
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);height:54px;
+  display:flex;align-items:center;padding:0 1.5rem;position:sticky;top:0;z-index:100;flex-shrink:0;gap:0;}
+.hlogo{font-family:var(--fd);font-size:19px;font-weight:900;letter-spacing:.06em;
+  text-transform:uppercase;margin-right:1.5rem;white-space:nowrap;flex-shrink:0;}
+.hlogo span{color:var(--red);}
+.hnav{display:flex;gap:2px;flex:1;overflow-x:auto;}
+.hnav::-webkit-scrollbar{display:none;}
+.nb{background:none;border:none;color:var(--muted);font-family:var(--fd);font-size:13px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;padding:6px 12px;border-radius:5px;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.nb:hover{color:var(--text);}
+.nb.on{color:var(--text);background:var(--bg4);}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.huser{font-size:12px;color:var(--muted);}
+.huser strong{color:var(--text);}
+.sbtn{background:var(--bg4);border:1px solid var(--border);border-radius:5px;padding:4px 10px;
+  color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;}
+.sbtn:hover{color:var(--text);}
+.sbtn.d{color:#f87171;}
+.sbtn.s{background:var(--red);border-color:var(--red);color:#fff;}
+.sbtn.s:hover{opacity:.88;}
+
+/* PAGES */
+.main{flex:1;overflow-y:auto;}
+.page{display:none;padding:1.75rem 1.5rem;}
+.page.on{display:block;}
+.wrap{max-width:1080px;margin:0 auto;}
+.ph{margin-bottom:1.5rem;}
+.pht{font-family:var(--fd);font-size:36px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;line-height:1;}
+.phs{color:var(--muted);font-size:13px;margin-top:3px;}
+
+/* SUBTABS */
+.stabs{display:flex;gap:2px;margin-bottom:1.25rem;border-bottom:1px solid var(--border);}
+.st{background:none;border:none;border-bottom:2px solid transparent;padding:6px 14px 8px;margin-bottom:-1px;
+  color:var(--muted);font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.st:hover{color:var(--text);}
+.st.on{color:var(--text);border-bottom-color:var(--red);}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+
+/* LEADERBOARD */
+.lbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:1.25rem;}
+.lbc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:1.1rem 1.25rem;position:relative;overflow:hidden;transition:border-color .2s;}
+.r1{border-color:rgba(240,192,64,.25)!important;}
+.r2{border-color:rgba(176,184,192,.18)!important;}
+.r3{border-color:rgba(205,127,66,.18)!important;}
+.lbbg{font-family:var(--fd);font-size:70px;font-weight:900;position:absolute;right:8px;top:-4px;
+  opacity:.06;line-height:1;pointer-events:none;user-select:none;}
+.r1 .lbbg{color:var(--gold);opacity:.13;}
+.r2 .lbbg{color:var(--silver);opacity:.1;}
+.r3 .lbbg{color:var(--bronze);opacity:.1;}
+.lbmed{font-size:18px;margin-bottom:4px;}
+.lbname{font-family:var(--fd);font-size:24px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;}
+.lbbig{font-family:var(--fd);font-size:44px;font-weight:900;line-height:1;margin:4px 0 1px;}
+.r1 .lbbig{color:var(--gold);}
+.r2 .lbbig{color:var(--silver);}
+.r3 .lbbig{color:var(--bronze);}
+.lbbigl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;}
+.lbrow{display:flex;gap:12px;padding-top:8px;border-top:1px solid var(--border);}
+.lbs{display:flex;flex-direction:column;gap:1px;}
+.lbsv{font-size:14px;font-weight:600;}
+.lbsl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;}
+.pos{color:var(--green);}.neg{color:#f87171;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;
+  font-weight:500;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);}
+.tbl td{padding:10px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr:hover td{background:var(--bg3);}
+.you{font-size:10px;background:rgba(217,50,40,.15);color:var(--red);border-radius:3px;padding:1px 5px;margin-left:5px;font-weight:600;}
+
+/* EVENTS */
+.evlist{display:flex;flex-direction:column;gap:10px;}
+.evc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.evh{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;transition:background .15s;}
+.evh:hover{background:var(--bg3);}
+.evt{font-family:var(--fd);font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;flex:1;}
+.evd{font-size:12px;color:var(--muted);}
+.pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+.p-main{background:rgba(217,50,40,.12);color:#ff6b5e;}
+.p-done{background:var(--bg4);color:var(--dim);}
+.p-draw{background:rgba(249,115,22,.12);color:var(--orange);}
+.chev{color:var(--dim);font-size:11px;transition:transform .2s;}
+.chev.o{transform:rotate(180deg);}
+.evb{display:none;padding:0 14px 14px;}
+.evb.o{display:block;}
+.slbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;font-weight:700;padding:10px 0 5px;}
+
+/* FIGHT ROW */
+.fr{background:var(--bg3);border:1px solid transparent;border-radius:7px;margin-bottom:3px;
+  padding:8px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;transition:border-color .15s;}
+.fr:hover{border-color:var(--border);}
+.fr.main{background:linear-gradient(90deg,rgba(217,50,40,.05),var(--bg3));}
+.fnames{display:flex;align-items:center;gap:6px;flex:1;min-width:180px;}
+.fn{font-family:var(--fd);font-size:16px;font-weight:700;text-transform:uppercase;white-space:nowrap;}
+.fn.cl{cursor:pointer;transition:color .15s;}
+.fn.cl:hover{color:var(--red);}
+.fvs{font-size:10px;color:var(--dim);font-weight:700;flex-shrink:0;}
+.odds{font-size:11px;color:var(--muted);flex-shrink:0;white-space:nowrap;}
+.rtag{font-size:11px;font-weight:700;font-family:var(--fd);padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0;}
+.rt-w{background:rgba(46,199,110,.12);color:var(--green);}
+.rt-t{background:var(--bg4);color:var(--dim);}
+.rt-d{background:rgba(249,115,22,.12);color:var(--orange);}
+.pbtns{display:flex;gap:5px;flex-shrink:0;}
+.pb{background:var(--bg4);border:1px solid var(--border);border-radius:5px;padding:4px 10px;
+  color:var(--muted);font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.pb:hover:not(:disabled){border-color:var(--border2);color:var(--text);}
+.pb.sel{background:rgba(46,199,110,.12);border-color:rgba(46,199,110,.35);color:var(--green);}
+.pb.correct{background:rgba(46,199,110,.12);border-color:rgba(46,199,110,.35);color:var(--green);}
+.pb.wrong{background:rgba(248,113,113,.06);border-color:rgba(248,113,113,.2);color:#a33;opacity:.7;}
+.pstrip{display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap;}
+.ps{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:600;white-space:nowrap;}
+.ps-w{background:rgba(46,199,110,.1);color:var(--green);}
+.ps-l{background:rgba(248,113,113,.08);color:#f87171;}
+.ps-p{background:var(--bg4);color:var(--dim);}
+.ps-d{background:rgba(249,115,22,.1);color:var(--orange);}
+.wctag{font-size:10px;color:var(--dim);background:var(--bg4);border-radius:3px;padding:1px 5px;
+  text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;}
+
+/* FIGHTER PROFILE */
+.fphero{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin-bottom:1rem;}
+.fpname{font-family:var(--fd);font-size:42px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;margin-bottom:.5rem;}
+.fpstats{display:flex;gap:20px;flex-wrap:wrap;}
+.fps{display:flex;flex-direction:column;gap:2px;}
+.fpsv{font-family:var(--fd);font-size:28px;font-weight:800;}
+.fpsl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+
+/* EVENT BREAKDOWN */
+.ebtbl{width:100%;border-collapse:collapse;font-size:13px;}
+.ebtbl th,.ebtbl td{padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;}
+.ebtbl th:first-child,.ebtbl td:first-child{text-align:left;}
+.ebtbl th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
+.ebtbl tbody tr:hover td{background:var(--bg3);}
+.ebtbl tfoot td{font-weight:600;border-top:1px solid var(--border2);border-bottom:none;color:var(--text);}
+
+/* DIVISIONS */
+.divgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
+.divc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.divn{font-family:var(--fd);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+  margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+.divrow{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px;gap:8px;}
+.divbar{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.divfill{height:100%;background:var(--red);border-radius:2px;transition:width .3s;}
+
+/* ADMIN */
+.asec{margin-bottom:2rem;}
+.asect{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;
+  margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+.aform{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;}
+.aform .fg{margin:0;flex:1;min-width:130px;}
+.aform .fg label{font-size:10px;}
+.aform .fi{padding:7px 9px;font-size:12px;}
+.atbl{width:100%;border-collapse:collapse;font-size:12px;}
+.atbl th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;
+  padding:7px 8px;text-align:left;border-bottom:1px solid var(--border);}
+.atbl td{padding:8px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.atbl tr:last-child td{border-bottom:none;}
+.rsel{background:var(--bg4);border:1px solid var(--border);border-radius:5px;padding:3px 7px;
+  color:var(--text);font-size:11px;outline:none;cursor:pointer;}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;right:18px;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:8px;padding:8px 14px;font-size:13px;z-index:999;
+  opacity:0;transform:translateY(6px);transition:all .22s;pointer-events:none;}
+.toast.on{opacity:1;transform:translateY(0);}
+.toast.ok{border-color:rgba(46,199,110,.35);color:var(--green);}
+.toast.err{border-color:rgba(248,113,113,.35);color:#f87171;}
+
+@media(max-width:640px){
+  .hdr{padding:0 .75rem;}
+  .page{padding:1.25rem .75rem;}
+  .pht{font-size:28px;}
+  .lbgrid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="abox">
+    <div class="alogo"><div class="abar"></div>FIGHT<span>POOL</span>&nbsp;<span style="color:var(--muted);font-size:22px;font-weight:400">2026</span></div>
+    <div class="atabs">
+      <button class="atab on" onclick="atab('in')">Sign In</button>
+      <button class="atab" onclick="atab('up')">Join Pool</button>
+    </div>
+    <div id="inf">
+      <div class="fg"><label>Username</label><input class="fi" id="iu" autocomplete="username" placeholder="your name"/></div>
+      <div class="fg"><label>Password</label><input class="fi" id="ip" type="password" autocomplete="current-password" placeholder="••••••"/></div>
+      <button class="bred" onclick="doLogin()">Enter</button>
+      <div class="aerr" id="ie"></div>
+    </div>
+    <div id="upf" style="display:none">
+      <div class="fg"><label>Username</label><input class="fi" id="ru" autocomplete="username" placeholder="lowercase name"/></div>
+      <div class="fg"><label>Password (min 4 chars)</label><input class="fi" id="rp" type="password" autocomplete="new-password" placeholder="••••••"/></div>
+      <button class="bred" onclick="doReg()">Create Account</button>
+      <div class="aerr" id="re"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="hdr">
+    <div class="hlogo">FIGHT<span>POOL</span></div>
+    <nav class="hnav">
+      <button class="nb on" onclick="nav('standings')">Standings</button>
+      <button class="nb" onclick="nav('events')">Events &amp; Picks</button>
+      <button class="nb" onclick="nav('breakdown')">Event Breakdown</button>
+      <button class="nb" onclick="nav('divisions')">Divisions</button>
+      <button class="nb adm" onclick="nav('admin')" style="display:none">Admin</button>
+      <button class="nb" onclick="nav('settings')">Settings</button>
+    </nav>
+    <div class="hright">
+      <div class="huser">Hi, <strong id="hname"></strong></div>
+      <button class="sbtn d" onclick="doLogout()">Sign out</button>
+    </div>
+  </header>
+  <main class="main">
+
+    <!-- STANDINGS -->
+    <div class="page on" id="pg-standings">
+      <div class="wrap">
+        <div class="ph"><div class="pht">Standings</div><div class="phs">2026 Season</div></div>
+        <div class="stabs">
+          <button class="st on" onclick="lbtab('main')">Main Card Challenge</button>
+          <button class="st" onclick="lbtab('all')">All Fights</button>
+        </div>
+        <div id="lbmain">
+          <div class="lbgrid" id="lbtop"></div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:0 4px;">
+            <table class="tbl"><thead><tr>
+              <th style="width:32px">#</th><th>Name</th>
+              <th>Main W</th><th>Main W%</th><th>Main Units</th><th>Main ROI</th>
+            </tr></thead><tbody id="lbmaintbody"></tbody></table>
+          </div>
+        </div>
+        <div id="lball" style="display:none">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:0 4px;">
+            <table class="tbl"><thead><tr>
+              <th style="width:32px">#</th><th>Name</th>
+              <th>Fights W</th><th>Win%</th><th>All Units</th><th>ROI</th>
+            </tr></thead><tbody id="lballtbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EVENTS -->
+    <div class="page" id="pg-events">
+      <div class="wrap">
+        <div class="ph"><div class="pht">Events &amp; Picks</div><div class="phs">Click a fighter name to see their profile</div></div>
+        <div class="evlist" id="evlist"></div>
+      </div>
+    </div>
+
+    <!-- BREAKDOWN -->
+    <div class="page" id="pg-breakdown">
+      <div class="wrap">
+        <div class="ph"><div class="pht">Event Breakdown</div><div class="phs">Net units per person per event</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:0 4px;overflow-x:auto;">
+          <table class="ebtbl" id="ebtbl"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIVISIONS -->
+    <div class="page" id="pg-divisions">
+      <div class="wrap">
+        <div class="ph"><div class="pht">Divisions</div><div class="phs">Win % by weight class — assign classes in Admin</div></div>
+        <div class="divgrid" id="divgrid"></div>
+      </div>
+    </div>
+
+    <!-- FIGHTER -->
+    <div class="page" id="pg-fighter">
+      <div class="wrap">
+        <button class="sbtn" onclick="navBack()" style="margin-bottom:1rem">← Back</button>
+        <div class="fphero">
+          <div class="fpname" id="fpname"></div>
+          <div class="fpstats" id="fpstats"></div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:0 4px;overflow-x:auto;">
+          <table class="tbl" id="fptbl"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="page" id="pg-admin">
+      <div class="wrap">
+        <div class="ph"><div class="pht">Admin</div><div class="phs">Manage events, fights &amp; results</div></div>
+
+        <div class="asec">
+          <div class="asect">Add New Event</div>
+          <div class="aform">
+            <div class="fg"><label>Event Name</label><input class="fi" id="evn" placeholder="UFC 315"/></div>
+            <div class="fg"><label>Date</label><input class="fi" type="date" id="evdate"/></div>
+            <button class="sbtn s" onclick="addNewEvent()" style="height:33px;white-space:nowrap;padding:4px 16px">+ Add Event</button>
+          </div>
+        </div>
+
+        <div class="asec">
+          <div class="asect">Add Fight</div>
+          <div class="aform">
+            <div class="fg"><label>Event</label><select class="fi" id="afev"><option value="">Select…</option></select></div>
+            <div class="fg"><label>Fighter A</label><input class="fi" id="affa" placeholder="Full name"/></div>
+            <div class="fg"><label>Fighter B</label><input class="fi" id="affb" placeholder="Full name"/></div>
+            <div class="fg" style="min-width:75px;flex:0"><label>Odds A</label><input class="fi" id="afoa" type="number" placeholder="-150"/></div>
+            <div class="fg" style="min-width:75px;flex:0"><label>Odds B</label><input class="fi" id="afob" type="number" placeholder="+130"/></div>
+            <div class="fg" style="min-width:85px;flex:0"><label>Card</label>
+              <select class="fi" id="afcard"><option>Main</option><option>Prelims</option></select></div>
+            <div class="fg" style="min-width:150px;flex:0"><label>Weight Class</label>
+              <select class="fi" id="afwc">${wcOpts()}</select></div>
+            <button class="sbtn s" onclick="createFight()" style="height:33px;white-space:nowrap;padding:4px 16px">+ Add Fight</button>
+          </div>
+        </div>
+
+        <div class="asec">
+          <div class="asect">Set Results &amp; Weight Classes</div>
+          <div class="fg" style="max-width:280px;margin-bottom:.75rem">
+            <label>Select Event</label>
+            <select class="fi" id="resev" onchange="loadAdminFights()"><option value="">Select…</option></select>
+          </div>
+          <div id="admfights"></div>
+        </div>
+
+        <div class="asec">
+          <div class="asect">Rename Fighter (fixes picks, results &amp; fights everywhere)</div>
+          <div class="aform">
+            <div class="fg"><label>Current (misspelled) name</label><input class="fi" id="rn-old" placeholder="Lone'eer Kavanagh"/></div>
+            <div class="fg"><label>Correct name</label><input class="fi" id="rn-new" placeholder="Lone'er Kavanagh"/></div>
+            <button class="sbtn s" onclick="renameFighter()" style="height:33px;white-space:nowrap;padding:4px 16px">Rename</button>
+          </div>
+          <div id="rn-result" style="font-size:12px;margin-top:8px;min-height:16px;"></div>
+        </div>
+
+        <div class="asec">
+          <div class="asect">Pool Members</div>
+          <table class="atbl">
+            <thead><tr><th>Username</th><th>Role</th><th>Joined</th><th></th></tr></thead>
+            <tbody id="admusers"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="pg-settings">
+      <div class="wrap" style="max-width:480px">
+        <div class="ph"><div class="pht">Settings</div><div class="phs">Manage your account</div></div>
+        <div class="card">
+          <div class="card-title" style="font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Change Password</div>
+          <div class="fg"><label>Current Password</label><input class="fi" type="password" id="cp-cur" placeholder="••••••"/></div>
+          <div class="fg"><label>New Password</label><input class="fi" type="password" id="cp-new" placeholder="min 4 characters"/></div>
+          <div class="fg"><label>Confirm New Password</label><input class="fi" type="password" id="cp-con" placeholder="repeat new password"/></div>
+          <button class="bred" onclick="changePassword()" style="margin-top:4px">Update Password</button>
+          <div id="cp-msg" style="font-size:13px;margin-top:10px;min-height:16px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const WC = [
+  'Mens Heavyweight','Mens Light Heavyweight','Mens Middleweight','Mens Welterweight',
+  'Mens Lightweight','Mens Featherweight','Mens Bantamweight','Mens Flyweight',
+  'Womens Featherweight','Womens Bantamweight','Womens Flyweight','Womens Strawweight'
+];
+function wcOpts(sel=''){
+  return `<option value="">Unknown</option>`+WC.map(w=>`<option value="${w}"${w===sel?' selected':''}>${w}</option>`).join('');
+}
+
+let ME=null, EVENTS=[], FIGHTS={}, PICKS={}, UNITS={}, LB=[], PREVPAGE=null;
+
+// UTILS
+function toast(msg,t='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast on '+t;
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2800);
+}
+async function api(method,url,body){
+  const o={method,headers:{'Content-Type':'application/json'}};
+  if(body) o.body=JSON.stringify(body);
+  const r=await fetch(url,o);const d=await r.json();
+  if(!r.ok) throw new Error(d.error||'Error');return d;
+}
+function fu(n,d=2){return typeof n==='number'?n.toFixed(d):'-';}
+function fpct(n){return typeof n==='number'?(n*100).toFixed(1)+'%':'-';}
+function funit(n){if(typeof n!=='number')return '-';return (n>=0?'+':'')+n.toFixed(3);}
+function q(s){return (s||'').replace(/'/g,"\\'")}
+
+// AUTH
+function atab(t){
+  document.querySelectorAll('.atab').forEach((b,i)=>b.classList.toggle('on',(i===0&&t==='in')||(i===1&&t==='up')));
+  document.getElementById('inf').style.display=t==='in'?'':'none';
+  document.getElementById('upf').style.display=t==='up'?'':'none';
+}
+async function doLogin(){
+  try{const d=await api('POST','/api/login',{username:document.getElementById('iu').value,password:document.getElementById('ip').value});onLogin(d);}
+  catch(e){document.getElementById('ie').textContent=e.message;}
+}
+async function doReg(){
+  try{const d=await api('POST','/api/register',{username:document.getElementById('ru').value,password:document.getElementById('rp').value});onLogin(d);}
+  catch(e){document.getElementById('re').textContent=e.message;}
+}
+async function doLogout(){await api('POST','/api/logout');ME=null;document.getElementById('auth').style.display='flex';document.getElementById('app').classList.remove('on');}
+function onLogin(u){
+  ME=u;
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').classList.add('on');
+  document.getElementById('hname').textContent=u.username;
+  if(u.isAdmin) document.querySelectorAll('.adm').forEach(el=>el.style.display='');
+  init();
+}
+
+// NAV
+function nav(pg){
+  PREVPAGE=document.querySelector('.page.on')?.id||null;
+  const pages=['standings','events','breakdown','divisions','admin','settings'];
+  document.querySelectorAll('.nb').forEach((b,i)=>b.classList.toggle('on',pages[i]===pg));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-'+pg)?.classList.add('on');
+  if(pg==='standings') renderLB();
+  if(pg==='events') renderEvents();
+  if(pg==='breakdown') renderBreakdown();
+  if(pg==='divisions') renderDivisions();
+  if(pg==='admin') renderAdmin();
+  if(pg==='settings') {}
+}
+function navBack(){
+  const prev=(PREVPAGE||'pg-events').replace('pg-','');
+  nav(prev==='fighter'?'events':prev);
+}
+
+// INIT
+async function init(){
+  EVENTS=await api('GET','/api/events');
+  await Promise.all(EVENTS.map(async ev=>{
+    FIGHTS[ev._id]=await api('GET',`/api/events/${ev._id}/fights`);
+    try{
+      const d=await api('GET',`/api/events/${ev._id}/picks`);
+      d.picks.forEach(p=>{if(!PICKS[p.fightId])PICKS[p.fightId]=[];PICKS[p.fightId].push(p);});
+      d.units.forEach(u=>{if(!UNITS[u.fightId])UNITS[u.fightId]=[];UNITS[u.fightId].push(u);});
+    }catch(e){}
+  }));
+  LB=await api('GET','/api/leaderboard');
+  renderLB();renderEvents();
+}
+
+// LEADERBOARD
+let lbv='main';
+function lbtab(v){
+  lbv=v;
+  document.querySelectorAll('.st').forEach((b,i)=>b.classList.toggle('on',(i===0&&v==='main')||(i===1&&v==='all')));
+  document.getElementById('lbmain').style.display=v==='main'?'':'none';
+  document.getElementById('lball').style.display=v==='all'?'':'none';
+}
+function renderLB(){
+  const data=LB;
+  const med=['🥇','🥈','🥉'];
+  const rc=['r1','r2','r3'];
+  document.getElementById('lbtop').innerHTML=data.slice(0,3).map((u,i)=>`
+    <div class="lbc ${rc[i]||''}">
+      <div class="lbbg">${i+1}</div>
+      <div class="lbmed">${med[i]||''}</div>
+      <div class="lbname">${u.username}${u.username===ME?.username?'<span class="you">YOU</span>':''}</div>
+      <div class="lbbig">${u.mainWins}</div>
+      <div class="lbbigl">Main card wins</div>
+      <div class="lbrow">
+        <div class="lbs"><div class="lbsv">${fpct(u.mainWinPct)}</div><div class="lbsl">Main W%</div></div>
+        <div class="lbs"><div class="lbsv ${u.mainUnits>=0?'pos':'neg'}">${funit(u.mainUnits)}</div><div class="lbsl">Main Units</div></div>
+        <div class="lbs"><div class="lbsv ${u.allUnits>=0?'pos':'neg'}">${funit(u.allUnits)}</div><div class="lbsl">All Units</div></div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('lbmaintbody').innerHTML=data.map((u,i)=>`
+    <tr>
+      <td style="font-family:var(--fd);font-size:17px;font-weight:700;color:var(--dim)">${i+1}</td>
+      <td><strong>${u.username}</strong>${u.username===ME?.username?'<span class="you">YOU</span>':''}</td>
+      <td><strong>${u.mainWins}</strong><span style="color:var(--muted);font-size:11px"> /${u.mainTotal}</span></td>
+      <td>${fpct(u.mainWinPct)}</td>
+      <td class="${u.mainUnits>=0?'pos':'neg'}" style="font-weight:500">${funit(u.mainUnits)}</td>
+      <td>${fu(u.mainRoi,1)}%</td>
+    </tr>`).join('');
+
+  document.getElementById('lballtbody').innerHTML=data.map((u,i)=>`
+    <tr>
+      <td style="font-family:var(--fd);font-size:17px;font-weight:700;color:var(--dim)">${i+1}</td>
+      <td><strong>${u.username}</strong>${u.username===ME?.username?'<span class="you">YOU</span>':''}</td>
+      <td><strong>${u.allWins}</strong><span style="color:var(--muted);font-size:11px"> /${u.allTotal}</span></td>
+      <td>${fpct(u.winPct)}</td>
+      <td class="${u.allUnits>=0?'pos':'neg'}" style="font-weight:500">${funit(u.allUnits)}</td>
+      <td>${fu(u.allRoi,1)}%</td>
+    </tr>`).join('');
+}
+
+// EVENTS
+function renderEvents(){
+  const el=document.getElementById('evlist');
+  if(!EVENTS.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:2rem">No events yet</div>';return;}
+  el.innerHTML=[...EVENTS].reverse().map(ev=>{
+    const fights=FIGHTS[ev._id]||[];
+    const main=fights.filter(f=>f.isMain);
+    const pre=fights.filter(f=>!f.isMain);
+    const done=fights.length&&fights.every(f=>f.result);
+    return `<div class="evc">
+      <div class="evh" onclick="toggleEv('${ev._id}')">
+        <div class="evt">${ev.name}</div>
+        <span class="evd">${ev.date||''}</span>
+        ${done?'<span class="pill p-done">Completed</span>':''}
+        <span class="chev" id="chev-${ev._id}">▼</span>
+      </div>
+      <div class="evb" id="evb-${ev._id}">
+        ${main.length?`<div class="slbl">Main Card</div>${main.map(f=>fightHTML(f,ev)).join('')}`:''}
+        ${pre.length?`<div class="slbl">Prelims</div>${pre.map(f=>fightHTML(f,ev)).join('')}`:''}
+        ${!fights.length?'<div style="color:var(--muted);font-size:12px;padding:8px 0">No fights yet</div>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fightHTML(fight,ev){
+  const allPicks=PICKS[fight._id]||[];
+  const myPick=allPicks.find(p=>p.username===ME?.username);
+  const result=fight.result;
+  const isDraw=result==='Draw';
+
+  const f1btn=makePBtn(fight,fight.fighterA,myPick,result,isDraw,ev._id);
+  const f2btn=makePBtn(fight,fight.fighterB,myPick,result,isDraw,ev._id);
+
+  let strip='';
+  if(result||ME?.isAdmin){
+    strip=allPicks.map(p=>{
+      if(isDraw)return `<span class="ps ps-d">${p.username}: Draw (void)</span>`;
+      const won=p.pick.trim()===result.trim();
+      return `<span class="ps ${won?'ps-w':'ps-l'}">${p.username}: ${p.pick}</span>`;
+    }).join('');
+  }else if(myPick){
+    strip=`<span class="ps ps-p">Your pick: ${myPick.pick}</span>`;
+  }
+
+  const resTag=isDraw
+    ?`<span class="rtag rt-d">DRAW</span>`
+    :result?`<span class="rtag rt-w">W: ${result}</span>`
+    :`<span class="rtag rt-t">TBD</span>`;
+
+  const oddsHTML=(fight.oddsA||fight.oddsB)
+    ?`<span class="odds">${fight.oddsA>0?'+':''}${fight.oddsA??'?'} / ${fight.oddsB>0?'+':''}${fight.oddsB??'?'}</span>`:'';
+
+  const wcHTML=fight.weightClass?`<span class="wctag">${fight.weightClass}</span>`:'';
+
+  return `<div class="fr${fight.isMain?' main':''}">
+    <div class="fnames">
+      <span class="fn cl" onclick="showFighter('${q(fight.fighterA)}')">${fight.fighterA}</span>
+      <span class="fvs">VS</span>
+      <span class="fn cl" onclick="showFighter('${q(fight.fighterB)}')">${fight.fighterB}</span>
+    </div>
+    ${wcHTML}${oddsHTML}${resTag}
+    <div class="pbtns">${f1btn}${f2btn}</div>
+    <div class="pstrip">${strip}</div>
+  </div>`;
+}
+
+function makePBtn(fight,fighter,myPick,result,isDraw,evId){
+  const picked=myPick?.pick===fighter;
+  let cls='pb';
+  if(result&&!isDraw) cls+=picked?(fighter===result?' correct':' wrong'):'';
+  else if(!result&&picked) cls+=' sel';
+  return `<button class="${cls}" onclick="submitPick('${fight._id}','${q(fighter)}','${evId}')">${fighter}</button>`;
+}
+
+function toggleEv(id){
+  const b=document.getElementById('evb-'+id);
+  const c=document.getElementById('chev-'+id);
+  const o=b.classList.toggle('o');
+  c.classList.toggle('o',o);
+}
+
+async function submitPick(fightId,pick,evId){
+  try{
+    await api('POST','/api/picks',{fightId,pick});
+    const d=await api('GET',`/api/events/${evId}/picks`);
+    PICKS={...PICKS};
+    d.picks.forEach(p=>{
+      if(!PICKS[p.fightId])PICKS[p.fightId]=[];
+      PICKS[p.fightId]=PICKS[p.fightId].filter(x=>x.username!==p.username);
+      PICKS[p.fightId].push(p);
+    });
+    d.units.forEach(u=>{
+      if(!UNITS[u.fightId])UNITS[u.fightId]=[];
+      UNITS[u.fightId]=UNITS[u.fightId].filter(x=>x.username!==u.username);
+      UNITS[u.fightId].push(u);
+    });
+    toast('Pick saved: '+pick);
+    renderEvents();
+    const evb=document.getElementById('evb-'+evId);
+    if(evb&&!evb.classList.contains('o')){evb.classList.add('o');document.getElementById('chev-'+evId)?.classList.add('o');}
+  }catch(e){toast(e.message,'err');}
+}
+
+// FIGHTER PROFILE
+async function showFighter(name){
+  PREVPAGE=document.querySelector('.page.on')?.id||'pg-events';
+  const resp=await api('GET',`/api/fighter/${encodeURIComponent(name)}`);
+  const data=resp.fights;
+  const {fighterAllUnits,fighterMainUnits}=resp;
+  document.getElementById('fpname').textContent=name;
+
+  let w=0,l=0,dr=0;
+  data.forEach(d=>{
+    if(!d.result)return;
+    if(d.result==='Draw'){dr++;return;}
+    if(d.result.toLowerCase()===name.toLowerCase())w++;else l++;
+  });
+  const tot=w+l+dr;
+  const auCls=fighterAllUnits>=0?'pos':'neg';
+  const muCls=fighterMainUnits>=0?'pos':'neg';
+  document.getElementById('fpstats').innerHTML=`
+    <div class="fps"><div class="fpsv pos">${w}</div><div class="fpsl">Wins</div></div>
+    <div class="fps"><div class="fpsv neg">${l}</div><div class="fpsl">Losses</div></div>
+    ${dr?`<div class="fps"><div class="fpsv" style="color:var(--orange)">${dr}</div><div class="fpsl">Draws</div></div>`:''}
+    <div class="fps"><div class="fpsv">${tot>0?Math.round(100*w/tot)+'%':'—'}</div><div class="fpsl">Win Rate</div></div>
+    <div class="fps"><div class="fpsv ${auCls}">${funit(fighterAllUnits)}</div><div class="fpsl">Units if always bet (all)</div></div>
+    <div class="fps"><div class="fpsv ${muCls}">${funit(fighterMainUnits)}</div><div class="fpsl">Units if always bet (main)</div></div>`;
+
+  const pickers=[...new Set(data.flatMap(d=>d.picks.map(p=>p.username)))];
+  document.getElementById('fptbl').innerHTML=`
+    <thead><tr>
+      <th>Event</th><th>Date</th><th>Opponent</th><th>Card</th><th>Odds</th><th>Result</th><th>Units if bet</th>
+      ${pickers.map(p=>`<th>${p}</th>`).join('')}
+    </tr></thead>
+    <tbody>${data.map(d=>{
+      const won=d.result&&d.result!=='Draw'&&d.result.toLowerCase()===name.toLowerCase();
+      const resCls=!d.result?'':d.result==='Draw'?'style="color:var(--orange)"':won?'class="pos"':'class="neg"';
+      const resLbl=!d.result?'TBD':d.result==='Draw'?'DRAW':won?'WIN':'LOSS';
+      const ubCls=d.unitIfBet==null?'':d.unitIfBet>=0?'pos':'neg';
+      const ubStr=d.unitIfBet!=null?(d.unitIfBet>=0?'+':'')+d.unitIfBet.toFixed(3):'—';
+      return `<tr>
+        <td style="font-weight:500">${d.event}</td>
+        <td style="color:var(--muted);font-size:12px">${d.date||''}</td>
+        <td class="fn cl" onclick="showFighter('${q(d.opponent)}')" style="font-family:var(--fd);font-size:15px;font-weight:700;text-transform:uppercase;cursor:pointer">${d.opponent}</td>
+        <td>${d.card}</td>
+        <td style="color:var(--muted)">${d.myOdds?(d.myOdds>0?'+':'')+d.myOdds:'—'}</td>
+        <td ${resCls}><strong>${resLbl}</strong></td>
+        <td class="${ubCls}" style="font-weight:500">${ubStr}</td>
+        ${pickers.map(p=>{
+          const pu=d.units.find(u=>u.username===p);
+          const pk=d.picks.find(x=>x.username===p);
+          if(!pk) return '<td style="color:var(--dim)">—</td>';
+          const correct=d.result&&d.result!=='Draw'&&pk.pick.trim()===d.result.trim();
+          const wrong=d.result&&d.result!=='Draw'&&pk.pick.trim()!==d.result.trim();
+          const cls=correct?'pos':wrong?'neg':'';
+          const uStr=pu?(pu.profit>=0?'+':'')+pu.profit.toFixed(3):'';
+          return `<td class="${cls}">${pk.pick}${uStr?` <span style="font-size:11px">(${uStr})</span>`:''}`;
+        }).join('')}
+      </tr>`;
+    }).join('')}</tbody>`;
+
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-fighter').classList.add('on');
+}
+
+// BREAKDOWN
+async function renderBreakdown(){
+  const {breakdown,users}=await api('GET','/api/event-breakdown');
+  const totals={};users.forEach(u=>totals[u]=0);
+  let html=`<thead><tr><th>Event</th><th>Date</th>${users.map(u=>`<th>${u}</th>`).join('')}</tr></thead><tbody>`;
+  breakdown.forEach(ev=>{
+    html+=`<tr><td><strong>${ev.event}</strong></td><td style="color:var(--muted);font-size:12px">${ev.date||''}</td>`;
+    users.forEach(u=>{const v=ev.perUser[u]||0;totals[u]+=v;html+=`<td class="${v>0?'pos':v<0?'neg':''}">${v!==0?funit(v):'—'}</td>`;});
+    html+='</tr>';
+  });
+  html+=`</tbody><tfoot><tr><td colspan="2">Total</td>${users.map(u=>`<td class="${totals[u]>=0?'pos':'neg'}">${funit(totals[u])}</td>`).join('')}</tr></tfoot>`;
+  document.getElementById('ebtbl').innerHTML=html;
+}
+
+// DIVISIONS
+async function renderDivisions(){
+  const {divStats,users}=await api('GET','/api/division-stats');
+  const order=WC.concat(Object.keys(divStats).filter(k=>!WC.includes(k)));
+  const el=document.getElementById('divgrid');
+  el.innerHTML=order.filter(wc=>divStats[wc]).map(wc=>`
+    <div class="divc">
+      <div class="divn">${wc}</div>
+      ${users.map(u=>{
+        const s=divStats[wc]?.[u]||{wins:0,total:0};
+        const pct=s.total>0?s.wins/s.total:0;
+        return `<div class="divrow">
+          <span style="font-weight:500">${u}</span>
+          <div class="divbar"><div class="divfill" style="width:${Math.round(pct*100)}%"></div></div>
+          <span style="font-size:12px;color:var(--muted)">${s.wins}/${s.total} (${Math.round(pct*100)}%)</span>
+        </div>`;
+      }).join('')}
+    </div>`).join('') || '<div style="color:var(--muted);grid-column:1/-1;text-align:center;padding:2rem">No division data yet — set weight classes in Admin</div>';
+}
+
+// ADMIN
+async function renderAdmin(){
+  if(!ME?.isAdmin)return;
+  // Verify session is still valid before doing anything
+  try{
+    await api('GET','/api/admin/test');
+  }catch(e){
+    toast('Session expired — please sign out and back in','err');
+    return;
+  }
+  const opts=EVENTS.map(e=>`<option value="${e._id}">${e.name}</option>`).join('');
+  document.getElementById('afev').innerHTML='<option value="">Select…</option>'+opts;
+  document.getElementById('resev').innerHTML='<option value="">Select…</option>'+opts;
+  loadAdminUsers();
+}
+
+async function loadAdminUsers(){
+  const users=await api('GET','/api/admin/users');
+  document.getElementById('admusers').innerHTML=users.map(u=>`
+    <tr>
+      <td>${u.username}</td>
+      <td style="color:var(--muted)">${u.isAdmin?'Admin':'Member'}</td>
+      <td style="color:var(--muted);font-size:11px">${u.createdAt?new Date(u.createdAt).toLocaleDateString():'-'}</td>
+      <td>${!u.isAdmin?`<button class="sbtn d" onclick="delUser('${u._id}')">Remove</button>`:''}</td>
+    </tr>`).join('');
+}
+
+async function delUser(id){if(!confirm('Remove user?'))return;await api('DELETE',`/api/admin/users/${id}`);toast('Removed');loadAdminUsers();}
+
+async function addNewEvent(){
+  try{
+    const name=document.getElementById('evn').value.trim();
+    const date=document.getElementById('evdate').value;
+    if(!name)return toast('Event name required','err');
+    const ev=await api('POST','/api/events',{name,date});
+    EVENTS.push(ev);
+    FIGHTS[ev._id]=[];
+    document.getElementById('evn').value='';
+    document.getElementById('evdate').value='';
+    toast('Event created: '+ev.name);
+    // Refresh events list and admin dropdowns
+    EVENTS=await api('GET','/api/events');
+    renderAdmin();
+    renderEvents();
+  }catch(e){
+    toast('Error: '+e.message,'err');
+    console.error('createEvent error:',e);
+  }
+}
+
+async function createFight(){
+  try{
+    const eid=document.getElementById('afev').value;
+    const fa=document.getElementById('affa').value.trim();
+    const fb=document.getElementById('affb').value.trim();
+    const oa=document.getElementById('afoa').value;
+    const ob=document.getElementById('afob').value;
+    const card=document.getElementById('afcard').value;
+    if(!eid||!fa||!fb)return toast('Select event and enter both fighters','err');
+    const fight=await api('POST',`/api/events/${eid}/fights`,{fighterA:fa,fighterB:fb,oddsA:oa,oddsB:ob,card});
+    if(!FIGHTS[eid])FIGHTS[eid]=[];
+    FIGHTS[eid].push(fight);
+    toast('Fight added ✓');
+    document.getElementById('affa').value='';document.getElementById('affb').value='';
+    loadAdminFights();
+  }catch(e){toast('Error: '+e.message,'err');console.error(e);}
+}
+
+async function loadAdminFights(){
+  const eid=document.getElementById('resev').value;
+  const el=document.getElementById('admfights');
+  if(!eid){el.innerHTML='';return;}
+  const fights=await api('GET',`/api/events/${eid}/fights`);
+  if(!fights.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">No fights in this event yet</div>';return;}
+  el.innerHTML=`<table class="atbl" style="font-size:13px"><thead><tr>
+    <th>Fighter A</th><th>vs</th><th>Fighter B</th><th>Odds A</th><th>Odds B</th><th>Card</th><th>Weight Class</th><th>Result</th><th></th>
+  </tr></thead><tbody>${fights.map(f=>`
+    <tr>
+      <td><input class="fi" style="padding:4px 7px;font-size:12px;width:130px" value="${f.fighterA}" onchange="updateFight('${f._id}',{fighterA:this.value},'${eid}')"/></td>
+      <td style="color:var(--dim);text-align:center">vs</td>
+      <td><input class="fi" style="padding:4px 7px;font-size:12px;width:130px" value="${f.fighterB}" onchange="updateFight('${f._id}',{fighterB:this.value},'${eid}')"/></td>
+      <td><input class="fi" style="padding:4px 7px;font-size:12px;width:65px" type="number" value="${f.oddsA||''}" placeholder="Odds A" onchange="updateFight('${f._id}',{oddsA:this.value},'${eid}')"/></td>
+      <td><input class="fi" style="padding:4px 7px;font-size:12px;width:65px" type="number" value="${f.oddsB||''}" placeholder="Odds B" onchange="updateFight('${f._id}',{oddsB:this.value},'${eid}')"/></td>
+      <td>
+        <select class="rsel" onchange="updateFight('${f._id}',{card:this.value},'${eid}')">
+          <option ${f.card==='Main'?'selected':''}>Main</option>
+          <option ${f.card==='Prelims'?'selected':''}>Prelims</option>
+        </select>
+      </td>
+      <td>
+        <select class="rsel" style="max-width:150px" onchange="updateFight('${f._id}',{weightClass:this.value},'${eid}')">
+          ${wcOpts(f.weightClass)}
+        </select>
+      </td>
+      <td>
+        <select class="rsel" onchange="updateFight('${f._id}',{result:this.value},'${eid}')">
+          <option value="">Pending</option>
+          <option value="${f.fighterA}" ${f.result===f.fighterA?'selected':''}>W: ${f.fighterA}</option>
+          <option value="${f.fighterB}" ${f.result===f.fighterB?'selected':''}>W: ${f.fighterB}</option>
+          <option value="Draw" ${f.result==='Draw'?'selected':''}>Draw (void)</option>
+        </select>
+      </td>
+      <td><button class="sbtn d" onclick="delFight('${f._id}','${eid}')">✕</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function updateFight(fid,data,eid){
+  await api('PUT',`/api/fights/${fid}`,data);
+  if(FIGHTS[eid]){const f=FIGHTS[eid].find(x=>x._id===fid);if(f)Object.assign(f,data);}
+  if(data.result!==undefined){
+    LB=await api('GET','/api/leaderboard');
+    toast('Result updated ✓');
+  } else {
+    toast('Saved ✓');
+  }
+}
+
+async function delFight(fid,eid){
+  if(!confirm('Delete this fight?'))return;
+  await api('DELETE',`/api/fights/${fid}`);
+  if(FIGHTS[eid])FIGHTS[eid]=FIGHTS[eid].filter(x=>x._id!==fid);
+  toast('Fight removed');loadAdminFights();
+}
+
+async function renameFighter(){
+  const oldName=document.getElementById('rn-old').value.trim();
+  const newName=document.getElementById('rn-new').value.trim();
+  const msg=document.getElementById('rn-result');
+  if(!oldName||!newName){toast('Enter both names','err');return;}
+  if(!confirm(`Rename "${oldName}" → "${newName}" everywhere (fights, picks, results)?`))return;
+  try{
+    const d=await api('POST','/api/admin/rename-fighter',{oldName,newName});
+    msg.style.color='var(--green)';
+    msg.textContent=`✓ Updated: ${d.asA+d.asB} fight entries, ${d.asResult} results, ${d.asPick} picks`;
+    document.getElementById('rn-old').value='';
+    document.getElementById('rn-new').value='';
+    toast('Fighter renamed ✓');
+    // Reload everything
+    await init();
+    renderAdmin();
+  }catch(e){msg.style.color='#f87171';msg.textContent='✕ '+e.message;toast(e.message,'err');}
+}
+
+async function changePassword(){
+  const cur=document.getElementById('cp-cur').value;
+  const nw=document.getElementById('cp-new').value;
+  const con=document.getElementById('cp-con').value;
+  const msg=document.getElementById('cp-msg');
+  msg.textContent='';
+  if(!cur||!nw||!con){msg.style.color='#f87171';msg.textContent='All fields required';return;}
+  if(nw!==con){msg.style.color='#f87171';msg.textContent='New passwords do not match';return;}
+  if(nw.length<4){msg.style.color='#f87171';msg.textContent='Password must be at least 4 characters';return;}
+  try{
+    await api('POST','/api/change-password',{currentPassword:cur,newPassword:nw});
+    msg.style.color='var(--green)';msg.textContent='✓ Password updated successfully';
+    document.getElementById('cp-cur').value='';
+    document.getElementById('cp-new').value='';
+    document.getElementById('cp-con').value='';
+    toast('Password updated ✓');
+  }catch(e){msg.style.color='#f87171';msg.textContent='✕ '+e.message;}
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  if(document.getElementById('inf').style.display!=='none')doLogin();
+  else if(document.getElementById('upf').style.display!=='none')doReg();
+});
+
+(async()=>{
+  const me=await api('GET','/api/me');
+  if(me.loggedIn)onLogin({username:me.username,isAdmin:me.isAdmin});
+})();
+</script>
+</body>
+</html>
