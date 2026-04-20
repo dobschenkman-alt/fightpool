@@ -5,13 +5,13 @@ const fs = require('fs');
 const Datastore = require('nedb-promises');
 
 const app = express();
-app.use(express.static('public'));
+
+app.use(express.static(__dirname));
+
 app.get('/', (req, res) => {
-  res.redirect('/index.html');
+  res.sendFile(__dirname + '/index.html');
 });
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
-});
+
 if (!fs.existsSync('./db')) fs.mkdirSync('./db');
 
 const db = {
@@ -344,14 +344,15 @@ app.post('/api/admin/rename-fighter',requireAdmin,async(req,res)=>{
 });
 
 // SERVE FRONTEND — must be after all API routes
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 
 (async()=>{
   await seedAdmin();
   await seedDatabase();
-  app.listen(process.env.PORT||3000,()=>console.log('FightPool 2026 → http://localhost:3000'));
+
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log('Server running on port', PORT);
+  });
+
 })();
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log('Server running on port', PORT);
-});
