@@ -5,6 +5,7 @@ const fs = require('fs');
 const Datastore = require('nedb-promises');
 
 const app = express();
+app.use(express.static('public'));
 if (!fs.existsSync('./db')) fs.mkdirSync('./db');
 
 const db = {
