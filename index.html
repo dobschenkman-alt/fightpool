@@ -346,7 +346,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
           <div class="asect">Add New Event</div>
           <div class="aform">
             <div class="fg"><label>Event Name</label><input class="fi" id="evn" placeholder="UFC 315"/></div>
-            <div class="fg"><label>Date</label><input class="fi" type="date" id="evdate"/></div>
+           <div class="fg"><label>Date</label><input class="fi" type="date" id="evdate"/></div>
+<div class="fg"><label>Picks Lock (date &amp; time)</label><input class="fi" type="datetime-local" id="evlock"/></div>
+
             <button class="sbtn s" onclick="addNewEvent()" style="height:33px;white-space:nowrap;padding:4px 16px">+ Add Event</button>
           </div>
         </div>
@@ -558,12 +560,12 @@ function renderEvents(){
     const main=fights.filter(f=>f.isMain);
     const pre=fights.filter(f=>!f.isMain);
     const done=fights.length&&fights.every(f=>f.result);
+const locked=ev.lockTime&&new Date()>=new Date(ev.lockTime);
     return `<div class="evc">
       <div class="evh" onclick="toggleEv('${ev._id}')">
         <div class="evt">${ev.name}</div>
         <span class="evd">${ev.date||''}</span>
-        ${done?'<span class="pill p-done">Completed</span>':''}
-        <span class="chev" id="chev-${ev._id}">▼</span>
+      ${done?'<span class="pill p-done">Completed</span>':locked?'<span class="pill" style="background:rgba(249,115,22,.12);color:var(--orange)">Picks Locked</span>':'<span class="pill pill-open" style="background:rgba(46,199,110,.1);color:var(--green)">Open</span>'}        <span class="chev" id="chev-${ev._id}">▼</span>
       </div>
       <div class="evb" id="evb-${ev._id}">
         ${main.length?`<div class="slbl">Main Card</div>${main.map(f=>fightHTML(f,ev)).join('')}`:''}
@@ -621,7 +623,9 @@ function makePBtn(fight,fighter,myPick,result,isDraw,evId){
   let cls='pb';
   if(result&&!isDraw) cls+=picked?(fighter===result?' correct':' wrong'):'';
   else if(!result&&picked) cls+=' sel';
-  return `<button class="${cls}" onclick="submitPick('${fight._id}','${q(fighter)}','${evId}')">${fighter}</button>`;
+  const isLocked=(ev?.lockTime&&new Date()>=new Date(ev?.lockTime)&&ME?.username!=='admin');
+return `<button class="${cls}" onclick="submitPick('${fight._id}','${q(fighter)}','${evId}')" ${isLocked&&!fight.result?'disabled style="opacity:.4;cursor:not-allowed"':''}>${fighter}</button>`;
+
 }
 
 function toggleEv(id){
@@ -784,7 +788,11 @@ async function addNewEvent(){
     const name=document.getElementById('evn').value.trim();
     const date=document.getElementById('evdate').value;
     if(!name)return toast('Event name required','err');
-    const ev=await api('POST','/api/events',{name,date});
+const lockTime=document.getElementById('evlock').value;
+const ev=await api('POST','/api/events',{name,date,lockTime});
+document.getElementById('evdate').value='';
+document.getElementById('evlock').value='';
+
     EVENTS.push(ev);
     FIGHTS[ev._id]=[];
     document.getElementById('evn').value='';
@@ -824,8 +832,18 @@ async function loadAdminFights(){
   if(!eid){el.innerHTML='';return;}
   const fights=await api('GET',`/api/events/${eid}/fights`);
   if(!fights.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">No fights in this event yet</div>';return;}
-  el.innerHTML=`<table class="atbl" style="font-size:13px"><thead><tr>
-    <th>Fighter A</th><th>vs</th><th>Fighter B</th><th>Odds A</th><th>Odds B</th><th>Card</th><th>Weight Class</th><th>Result</th><th></th>
+ const evDoc=EVENTS.find(e=>e._id===eid)||{};
+const lockVal=evDoc.lockTime?new Date(new Date(evDoc.lockTime).getTime()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16):'';
+el.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+  <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Picks Lock Date/Time</label>
+  <input class="fi" type="datetime-local" id="lock-input" value="${lockVal}" style="width:220px;padding:6px 10px;font-size:12px"/>
+  <button class="sbtn s" onclick="saveLockTime('${eid}')" style="padding:5px 14px">Save Lock</button>
+  ${evDoc.lockTime?`<span style="font-size:12px;color:${new Date()>=new Date(evDoc.lockTime)?'var(--orange)':'var(--green)'}">
+    ${new Date()>=new Date(evDoc.lockTime)?'🔒 Locked':'🟢 Open until '+new Date(evDoc.lockTime).toLocaleString()}</span>`:''}
+</div>
+<table class="atbl"
+style="font-size:13px"><thead><tr>
+    <th>Fighter A</th><th>vs</th><th>Fighter B</th><th>Odds A</th><th>Odds B</th><th>Card</th><th>Result</th><th></th>
   </tr></thead><tbody>${fights.map(f=>`
     <tr>
       <td><input class="fi" style="padding:4px 7px;font-size:12px;width:130px" value="${f.fighterA}" onchange="updateFight('${f._id}',{fighterA:this.value},'${eid}')"/></td>
@@ -892,6 +910,15 @@ async function renameFighter(){
     renderAdmin();
   }catch(e){msg.style.color='#f87171';msg.textContent='✕ '+e.message;toast(e.message,'err');}
 }
+async function saveLockTime(eid){
+  const val=document.getElementById('lock-input').value;
+  const ev=EVENTS.find(e=>e._id===eid);
+  if(!ev)return;
+  await api('PUT',`/api/events/${eid}`,{name:ev.name,date:ev.date,lockTime:val||null});
+  ev.lockTime=val||null;
+  toast(val?'Lock time saved ✓':'Lock removed');
+  loadAdminFights();
+}
 
 async function changePassword(){
   const cur=document.getElementById('cp-cur').value;
@@ -925,3 +952,4 @@ document.addEventListener('keydown',e=>{
 </script>
 </body>
 </html>
+
