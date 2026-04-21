@@ -387,7 +387,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
           </div>
           <div id="rn-result" style="font-size:12px;margin-top:8px;min-height:16px;"></div>
         </div>
-
+<div class="asec">
+          <div class="asect">Delete Event</div>
+          <div class="aform">
+            <div class="fg"><label>Select Event to Delete</label><select class="fi" id="del-ev-sel"><option value="">Select…</option></select></div>
+            <button class="sbtn d" onclick="deleteEvent()" style="height:33px;white-space:nowrap;padding:4px 16px">Delete Event</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">⚠️ This permanently deletes the event and all its fights, picks, and units.</div>
+        </div>
         <div class="asec">
           <div class="asect">Pool Members</div>
           <table class="atbl">
@@ -559,13 +566,15 @@ function renderEvents(){
     const fights=FIGHTS[ev._id]||[];
     const main=fights.filter(f=>f.isMain);
     const pre=fights.filter(f=>!f.isMain);
-    const done=fights.length&&fights.every(f=>f.result);
-const locked=ev.lockTime&&new Date()>=new Date(ev.lockTime);
+const done=fights.length&&fights.every(f=>f.result);
+    const locked=ev.lockTime&&new Date()>=new Date(ev.lockTime);
+    const statusPill=done?'<span class="pill p-done">Completed</span>':locked?'<span class="pill" style="background:rgba(249,115,22,.12);color:var(--orange)">🔒 Picks Locked</span>':ev.lockTime?'<span class="pill" style="background:rgba(46,199,110,.1);color:var(--green)">🟢 Open</span>':'';
     return `<div class="evc">
       <div class="evh" onclick="toggleEv('${ev._id}')">
         <div class="evt">${ev.name}</div>
         <span class="evd">${ev.date||''}</span>
-      ${done?'<span class="pill p-done">Completed</span>':locked?'<span class="pill" style="background:rgba(249,115,22,.12);color:var(--orange)">Picks Locked</span>':'<span class="pill pill-open" style="background:rgba(46,199,110,.1);color:var(--green)">Open</span>'}        <span class="chev" id="chev-${ev._id}">▼</span>
+        ${statusPill}
+        <span class="chev" id="chev-${ev._id}">▼</span>
       </div>
       <div class="evb" id="evb-${ev._id}">
         ${main.length?`<div class="slbl">Main Card</div>${main.map(f=>fightHTML(f,ev)).join('')}`:''}
@@ -577,16 +586,17 @@ const locked=ev.lockTime&&new Date()>=new Date(ev.lockTime);
 }
 
 function fightHTML(fight,ev){
+  const locked=ev.lockTime&&new Date()>=new Date(ev.lockTime);
   const allPicks=PICKS[fight._id]||[];
   const myPick=allPicks.find(p=>p.username===ME?.username);
   const result=fight.result;
   const isDraw=result==='Draw';
 
-  const f1btn=makePBtn(fight,fight.fighterA,myPick,result,isDraw,ev._id);
-  const f2btn=makePBtn(fight,fight.fighterB,myPick,result,isDraw,ev._id);
+  const f1btn=makePBtn(fight,fight.fighterA,myPick,result,isDraw,ev._id,ev);
+  const f2btn=makePBtn(fight,fight.fighterB,myPick,result,isDraw,ev._id,ev);
 
   let strip='';
-  if(result||ME?.isAdmin){
+  if(result||ME?.isAdmin||locked){
     strip=allPicks.map(p=>{
       if(isDraw)return `<span class="ps ps-d">${p.username}: Draw (void)</span>`;
       const won=p.pick.trim()===result.trim();
@@ -618,16 +628,15 @@ function fightHTML(fight,ev){
   </div>`;
 }
 
-function makePBtn(fight,fighter,myPick,result,isDraw,evId){
+function makePBtn(fight,fighter,myPick,result,isDraw,evId,evObj){
   const picked=myPick?.pick===fighter;
   let cls='pb';
   if(result&&!isDraw) cls+=picked?(fighter===result?' correct':' wrong'):'';
   else if(!result&&picked) cls+=' sel';
-  const isLocked=(ev?.lockTime&&new Date()>=new Date(ev?.lockTime)&&ME?.username!=='admin');
-return `<button class="${cls}" onclick="submitPick('${fight._id}','${q(fighter)}','${evId}')" ${isLocked&&!fight.result?'disabled style="opacity:.4;cursor:not-allowed"':''}>${fighter}</button>`;
-
+  const isLocked=evObj?.lockTime&&new Date()>=new Date(evObj.lockTime)&&!ME?.isAdmin;
+  const disabled=isLocked||!!result;
+  return `<button class="${cls}"${disabled?' disabled':''} onclick="submitPick('${fight._id}','${q(fighter)}','${evId}')">${fighter}</button>`;
 }
-
 function toggleEv(id){
   const b=document.getElementById('evb-'+id);
   const c=document.getElementById('chev-'+id);
@@ -765,8 +774,9 @@ async function renderAdmin(){
     return;
   }
   const opts=EVENTS.map(e=>`<option value="${e._id}">${e.name}</option>`).join('');
-  document.getElementById('afev').innerHTML='<option value="">Select…</option>'+opts;
+ document.getElementById('afev').innerHTML='<option value="">Select…</option>'+opts;
   document.getElementById('resev').innerHTML='<option value="">Select…</option>'+opts;
+  document.getElementById('del-ev-sel').innerHTML='<option value="">Select…</option>'+opts;
   loadAdminUsers();
 }
 
@@ -909,6 +919,20 @@ async function renameFighter(){
     await init();
     renderAdmin();
   }catch(e){msg.style.color='#f87171';msg.textContent='✕ '+e.message;toast(e.message,'err');}
+}
+  async function deleteEvent(){
+  const eid=document.getElementById('del-ev-sel').value;
+  if(!eid)return toast('Select an event first','err');
+  const ev=EVENTS.find(e=>e._id===eid);
+  if(!confirm(`Delete "${ev?.name}" and ALL its fights, picks, and units? This cannot be undone.`))return;
+  try{
+    await api('DELETE',`/api/events/${eid}`);
+    EVENTS=EVENTS.filter(e=>e._id!==eid);
+    delete FIGHTS[eid];
+    toast('Event deleted');
+    EVENTS=await api('GET','/api/events');
+    renderAdmin();renderEvents();
+  }catch(e){toast('Error: '+e.message,'err');}
 }
 async function saveLockTime(eid){
   const val=document.getElementById('lock-input').value;
