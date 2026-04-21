@@ -98,9 +98,9 @@ app.get('/api/events',async(_,res)=>{
 });
 app.post('/api/events',requireAdmin,async(req,res)=>{
   try{
-    const {name,date}=req.body;
+    const {name,date,lockTime}=req.body;
     if(!name||!name.trim()) return res.status(400).json({error:'Event name is required'});
- res.json(await db.events.insert({name:name.trim(),date:date||'',lockTime:null,createdAt:new Date()}));
+res.json(await db.events.insert({name:name.trim(),date:date||'',lockTime:lockTime||null,createdAt:new Date()}));
   }catch(e){res.status(500).json({error:e.message});}
 });
 app.put('/api/events/:id',requireAdmin,async(req,res)=>{
